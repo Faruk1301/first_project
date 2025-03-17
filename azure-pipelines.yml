@@ -1,9 +1,3 @@
-trigger:
-- main  # Trigger on changes to the main branch
-
-pool:
-  vmImage: 'ubuntu-latest'
-
 
 trigger:
 - main  # Trigger on changes to the main branch
@@ -34,14 +28,7 @@ jobs:
       ARM_CLIENT_ID: "9decc6a2-0185-4bf0-829f-212b9b708ea1"
       ARM_SUBSCRIPTION_ID: "3e80dd4d-6d0e-48ec-a04b-c1401f2963bb"
       ARM_TENANT_ID: "79a50cb4-fa04-495b-9bd1-7860b"
-  
-  - script: terraform apply -auto-approve -var "client_secret=$(CLIENT_SECRET)"
-    displayName: 'Apply Terraform'
-    env:
-      ARM_CLIENT_SECRET: $(CLIENT_SECRET)  # Use the secret from Azure Pipelines
-      ARM_CLIENT_ID: "9decc6a2-0185-4bf0-829f-212b9b708ea1"
-      ARM_SUBSCRIPTION_ID: "3e80dd4d-6d0e-48ec-a04b-c1401f2963bb"
-      ARM_TENANT_ID: "79a50cb4-fa04-495b-9bd1-7860b"
+
 
 
 
