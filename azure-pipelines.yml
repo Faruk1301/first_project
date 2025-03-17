@@ -8,19 +8,16 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  # Authenticate with Azure using the service connection
+  # Authenticate with Azure using the Azure Service Connection
   - task: AzureCLI@2
-    displayName: 'Authenticate with Azure'
+    displayName: 'Azure Login'
     inputs:
-      azureSubscription: 'azure-sc'  # Use your correct service connection name
+      azureSubscription: 'azure-sc'  # Replace with your Azure Service Connection name
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        # Store authentication details in environment variables for Terraform
-        echo "##vso[task.setvariable variable=ARM_CLIENT_ID;]$(servicePrincipalId)"
-        echo "##vso[task.setvariable variable=ARM_CLIENT_SECRET;]$(servicePrincipalKey)"
-        echo "##vso[task.setvariable variable=ARM_SUBSCRIPTION_ID;]$(subscriptionId)"
-        echo "##vso[task.setvariable variable=ARM_TENANT_ID;]$(tenantId)"
+        # Confirm successful login and display subscription info
+        az account show
 
   # Install Terraform
   - task: Bash@3
