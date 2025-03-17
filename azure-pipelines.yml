@@ -8,7 +8,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  # Authenticate with Azure using the Azure Service Connection
+  # Authenticate with Azure using the service connection
   - task: AzureCLI@2
     displayName: 'Azure Login'
     inputs:
@@ -16,8 +16,10 @@ steps:
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        # Confirm successful login and display subscription info
-        az account show
+        # Login to Azure using Service Principal
+        az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
+        # Set the subscription for the Azure CLI session
+        az account set --subscription $(ARM_SUBSCRIPTION_ID)
 
   # Install Terraform
   - task: Bash@3
