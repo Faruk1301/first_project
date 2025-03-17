@@ -5,7 +5,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  servicePrincipalId: $(servicePrincipalId)   # Ensure these are set in the pipeline's variables or pipeline secrets
+  servicePrincipalId: $(servicePrincipalId)
   servicePrincipalKey: $(servicePrincipalKey)
   tenantId: $(tenantId)
   subscriptionId: $(subscriptionId)
@@ -16,28 +16,40 @@ steps:
 - task: AzureCLI@2
   displayName: 'Azure CLI Login'
   inputs:
-    azureSubscription: 'azure-sc'  # Azure Service Connection Name (Azure DevOps)
+    azureSubscription: 'azure-sc'  # Use Azure service connection for easier authentication
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
       echo "Logging in to Azure with Service Principal"
       az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
       az account set --subscription $(subscriptionId)
+      az account show  # Debugging: shows the account information
       echo "Azure login successful"
 
 # Step 2: Install Terraform
 - task: TerraformInstaller@0
   displayName: 'Install Terraform'
 
-# Step 3: Run Terraform Plan
+# Step 3: Clear Terraform cache and reinitialize
+- task: Bash@3
+  displayName: 'Clear Terraform Cache and Reinitialize'
+  inputs:
+    targetType: 'inline'
+    script: |
+      echo "Clearing .terraform cache"
+      rm -rf .terraform  # Remove the Terraform cache
+      echo "Reinitializing Terraform"
+      terraform init  # Reinitialize Terraform
+
+# Step 4: Run Terraform Plan
 - task: Bash@3
   displayName: 'Run Terraform Plan'
   inputs:
     targetType: 'inline'
     script: |
       echo "Running Terraform Plan"
-      terraform init
       terraform plan
+
 
 
 
