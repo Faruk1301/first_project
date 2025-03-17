@@ -1,33 +1,49 @@
 
 trigger:
-- main  # Trigger on changes to the main branch
+  - main  # Change this to match your default branch
 
 pool:
   vmImage: 'ubuntu-latest'
 
-jobs:
-- job: terraform
-  steps:
-  - task: Checkout@1
-    displayName: 'Checkout code'
+variables:
+  TF_VAR_CLIENT_SECRET: $(CLIENT_SECRET)
+
+steps:
+  - checkout: self
+
+  - task: TerraformInstaller@0
+    displayName: "Install Terraform"
+    inputs:
+      terraformVersion: 'latest'
 
   - script: |
-      echo "Installing Terraform..."
-      curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-      sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-      sudo apt-get update && sudo apt-get install terraform
-    displayName: 'Install Terraform'
+      terraform init \
+        -backend=false
+    displayName: "Terraform Init"
 
-  - script: terraform init
-    displayName: 'Initialize Terraform'
+  - script: |
+      terraform validate
+    displayName: "Terraform Validate"
 
-  - script: terraform plan -var "client_secret=$(CLIENT_SECRET)"
-    displayName: 'Terraform Plan'
+  - script: |
+      terraform plan -out=tfplan
+    displayName: "Terraform Plan"
     env:
-      ARM_CLIENT_SECRET: $(CLIENT_SECRET)  # Use the secret from Azure Pipelines
       ARM_CLIENT_ID: "9decc6a2-0185-4bf0-829f-212b9b708ea1"
+      ARM_CLIENT_SECRET: $(CLIENT_SECRET)
       ARM_SUBSCRIPTION_ID: "3e80dd4d-6d0e-48ec-a04b-c1401f2963bb"
-      ARM_TENANT_ID: "79a50cb4-fa04-495b-9bd1-7860b"
+      ARM_TENANT_ID: "79a50cb4-fa04-495b-9bd1-7860bc00fe6a"
+
+  - script: |
+      terraform apply -auto-approve tfplan
+    displayName: "Terraform Apply"
+    env:
+      ARM_CLIENT_ID: "9decc6a2-0185-4bf0-829f-212b9b708ea1"
+      ARM_CLIENT_SECRET: $(CLIENT_SECRET)
+      ARM_SUBSCRIPTION_ID: "3e80dd4d-6d0e-48ec-a04b-c1401f2963bb"
+      ARM_TENANT_ID: "79a50cb4-fa04-495b-9bd1-7860bc00fe6a"
+
+
 
 
 
