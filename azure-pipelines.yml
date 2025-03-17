@@ -1,35 +1,66 @@
-
 trigger:
-- main
-
-pool:
-  vmImage: 'ubuntu-latest'
+  branches:
+    include:
+      - main  # Trigger pipeline when pushing to the main branch
 
 variables:
-  ARM_CLIENT_ID: $(servicePrincipalClientId)  # Set this to your Service Principal's client ID
-  ARM_CLIENT_SECRET: $(servicePrincipalClientSecret)  # Set this to your Service Principal's client secret
-  ARM_TENANT_ID: $(tenantId)  # Set this to your Tenant ID
-  ARM_SUBSCRIPTION_ID: $(subscriptionId)  # Set this to your Subscription ID
+  - group: azure_credential  # Reference the variable group that contains the service principal credentials
+  subscriptionId: $(subscriptionId)  # Reference the subscription ID from the variable group
+  tenantId: $(tenantId)  # Reference the tenant ID from the variable group
+  azureSubscription: 'azure-sc'  # Azure service connection name configured in Azure DevOps
+  workingDirectory: $(System.DefaultWorkingDirectory)  # Directory for Terraform commands
 
 jobs:
-- job: Terraform
-  steps:
-    - task: AzureCLI@2
-      displayName: 'Azure CLI login'
-      inputs:
-        azureSubscription: 'azure-sc'  # Name of the Azure service connection in DevOps
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-          az account set --subscription $ARM_SUBSCRIPTION_ID
-    - task: TerraformInstaller@0
-      displayName: 'Install Terraform'
-      inputs:
-        terraformVersion: 'latest'
-    - script: |
-        terraform init
-        terraform plan -out=tfplan
-      displayName: 'Terraform Plan'
+  - job: TerraformDeployment
+    displayName: 'Deploy with Terraform'
+    pool:
+      vmImage: 'ubuntu-latest'  # Use Ubuntu for the build agent
+
+    steps:
+      # Azure CLI login using Service Principal from the variable group
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: $(azureSubscription)
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Logging in with service principal..."
+            az login --service-principal -u $(servicePrincipalId) --tenant $(tenantId) --password $(servicePrincipalKey)
+            az account set --subscription $(subscriptionId)
+            echo "Logged in successfully."
+
+      # Terraform Init
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: $(azureSubscription)
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Running Terraform init..."
+            cd $(workingDirectory)
+            terraform init
+
+      # Terraform Plan
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: $(azureSubscription)
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Running Terraform plan..."
+            cd $(workingDirectory)
+            terraform plan
+
+      # Terraform Apply
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: $(azureSubscription)
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Running Terraform apply..."
+            cd $(workingDirectory)
+            terraform apply -auto-approve
+
 
 
