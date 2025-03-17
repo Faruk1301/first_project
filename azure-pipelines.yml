@@ -6,21 +6,16 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  servicePrincipalId: $(servicePrincipalId)
-  servicePrincipalKey: $(servicePrincipalKey)
-  tenantId: $(tenantId)
-  subscriptionId: $(subscriptionId)
-
 stages:
   - stage: Terraform
     jobs:
       - job: TerraformPlan
         steps:
+          # Authenticate using Azure service connection
           - task: AzureCLI@2
-            displayName: 'Authenticate using Azure service connection'
+            displayName: 'Authenticate with Azure'
             inputs:
-              azureSubscription: 'azure-sc'  # Replace with your service connection name
+              azureSubscription: 'azure-sc'  # Replace with your Azure service connection name
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -30,12 +25,14 @@ stages:
                 echo "Running Terraform plan"
                 terraform plan
           
+          # Run Terraform Plan
           - task: Bash@3
             displayName: 'Run Terraform Plan'
             inputs:
               targetType: 'inline'
               script: |
                 terraform plan
+
 
 
 
