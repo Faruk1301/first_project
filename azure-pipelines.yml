@@ -1,12 +1,14 @@
-
 trigger:
-  - main  # Change this to match your default branch
+  - main  # Set this to match your default branch
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
+  TF_VAR_CLIENT_ID: $(CLIENT_ID)
   TF_VAR_CLIENT_SECRET: $(CLIENT_SECRET)
+  TF_VAR_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+  TF_VAR_TENANT_ID: $(TENANT_ID)
 
 steps:
   - checkout: self
@@ -17,8 +19,7 @@ steps:
       terraformVersion: 'latest'
 
   - script: |
-      terraform init \
-        -backend=false
+      terraform init -backend=false
     displayName: "Terraform Init"
 
   - script: |
@@ -29,19 +30,20 @@ steps:
       terraform plan -out=tfplan
     displayName: "Terraform Plan"
     env:
-      ARM_CLIENT_ID: "9decc6a2-0185-4bf0-829f-212b9b708ea1"
+      ARM_CLIENT_ID: $(CLIENT_ID)
       ARM_CLIENT_SECRET: $(CLIENT_SECRET)
-      ARM_SUBSCRIPTION_ID: "3e80dd4d-6d0e-48ec-a04b-c1401f2963bb"
-      ARM_TENANT_ID: "79a50cb4-fa04-495b-9bd1-7860bc00fe6a"
+      ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+      ARM_TENANT_ID: $(TENANT_ID)
 
   - script: |
       terraform apply -auto-approve tfplan
     displayName: "Terraform Apply"
     env:
-      ARM_CLIENT_ID: "9decc6a2-0185-4bf0-829f-212b9b708ea1"
+      ARM_CLIENT_ID: $(CLIENT_ID)
       ARM_CLIENT_SECRET: $(CLIENT_SECRET)
-      ARM_SUBSCRIPTION_ID: "3e80dd4d-6d0e-48ec-a04b-c1401f2963bb"
-      ARM_TENANT_ID: "79a50cb4-fa04-495b-9bd1-7860bc00fe6a"
+      ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+      ARM_TENANT_ID: $(TENANT_ID)
+
 
 
 
