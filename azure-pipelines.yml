@@ -18,6 +18,15 @@ steps:
     inputs:
       terraformVersion: 'latest'
 
+  - task: AzureCLI@2
+    displayName: "Login to Azure"
+    inputs:
+      azureSubscription: "azure-sc"  # Service Connection Name
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az account show
+
   - script: |
       terraform init -backend=false
     displayName: "Terraform Init"
