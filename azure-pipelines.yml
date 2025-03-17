@@ -1,0 +1,65 @@
+
+trigger:
+  branches:
+    include:
+      - main  # Ensure this matches your repo's branch name
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  # Authenticate with Azure using the service connection
+  - task: AzureCLI@2
+    displayName: 'Authenticate with Azure'
+    inputs:
+      azureSubscription: 'azure-sc'  # Use your correct service connection name
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        # Store authentication details in environment variables for Terraform
+        echo "##vso[task.setvariable variable=ARM_CLIENT_ID;]$(servicePrincipalId)"
+        echo "##vso[task.setvariable variable=ARM_CLIENT_SECRET;]$(servicePrincipalKey)"
+        echo "##vso[task.setvariable variable=ARM_SUBSCRIPTION_ID;]$(subscriptionId)"
+        echo "##vso[task.setvariable variable=ARM_TENANT_ID;]$(tenantId)"
+
+  # Install Terraform
+  - task: Bash@3
+    displayName: 'Install Terraform'
+    inputs:
+      targetType: 'inline'
+      script: |
+        sudo apt-get update
+        sudo apt-get install -y gnupg software-properties-common
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt-get update && sudo apt-get install terraform -y
+        terraform --version
+
+  # Initialize Terraform
+  - task: Bash@3
+    displayName: 'Terraform Init'
+    inputs:
+      targetType: 'inline'
+      script: |
+        export ARM_CLIENT_ID=$(ARM_CLIENT_ID)
+        export ARM_CLIENT_SECRET=$(ARM_CLIENT_SECRET)
+        export ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)
+        export ARM_TENANT_ID=$(ARM_TENANT_ID)
+
+        terraform init
+
+  # Terraform Plan
+  - task: Bash@3
+    displayName: 'Terraform Plan'
+    inputs:
+      targetType: 'inline'
+      script: |
+        terraform plan -out=tfplan
+
+  # Terraform Apply
+  - task: Bash@3
+    displayName: 'Terraform Apply'
+    inputs:
+      targetType: 'inline'
+      script: |
+        terraform apply -auto-approve tfplan
