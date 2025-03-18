@@ -32,7 +32,7 @@ provider "azurerm" {
 
 # Resource block
 resource "azurerm_resource_group" "example" {
-  name     = "example-resources4"
+  name     = "example-resources5"
   location = "East US"
 }
 
