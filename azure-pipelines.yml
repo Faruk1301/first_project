@@ -1,64 +1,36 @@
 trigger:
-  - main
+- main  # Runs pipeline when main.tf is changed in GitHub
+
+pool:
+  vmImage: 'ubuntu-latest'
 
 variables:
-  - group: azure_credential  # Ensures variable group is linked
+- group: azure_credential  # Using your Variable Group
 
-stages:
-  - stage: Terraform_Deployment
-    displayName: "Terraform Deployment"
-    jobs:
-      - job: Terraform
-        displayName: "Run Terraform"
-        pool:
-          vmImage: "ubuntu-latest"
+steps:
+- checkout: self
 
-        steps:
-          # Authenticate using Azure Service Connection
-          - task: AzureCLI@2
-            displayName: "Azure Authentication"
-            inputs:
-              azureSubscription: "azure-sc"  
-              scriptType: "bash"
-              scriptLocation: "inlineScript"
-              inlineScript: |
-                az account show
+- task: TerraformInstaller@1
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: 'latest'
 
-          # Install Terraform
-          - task: TerraformInstaller@1
-            displayName: "Install Terraform"
-            inputs:
-              terraformVersion: "latest"
+- script: |
+    terraform init
+  displayName: 'Terraform Init'
 
-          # Terraform Init - **Local Backend (No Storage Account)**
-          - script: |
-              terraform init
-            displayName: "Terraform Init"
-            env:
-              ARM_CLIENT_ID: $(CLIENT_ID)
-              ARM_CLIENT_SECRET: $(CLIENT_SECRET)
-              ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-              ARM_TENANT_ID: $(TENANT_ID)
+- script: |
+    terraform plan -out=tfplan -input=false \
+      -var "CLIENT_ID=$(CLIENT_ID)" \
+      -var "CLIENT_SECRET=$(CLIENT_SECRET)" \
+      -var "SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)" \
+      -var "TENANT_ID=$(TENANT_ID)"
+  displayName: 'Terraform Plan'
 
-          # Terraform Plan
-          - script: |
-              terraform plan -out=tfplan -input=false
-            displayName: "Terraform Plan"
-            env:
-              ARM_CLIENT_ID: $(CLIENT_ID)
-              ARM_CLIENT_SECRET: $(CLIENT_SECRET)
-              ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-              ARM_TENANT_ID: $(TENANT_ID)
+- script: |
+    terraform apply -auto-approve tfplan
+  displayName: 'Terraform Apply'
 
-          # Terraform Apply
-          - script: |
-              terraform apply -auto-approve tfplan
-            displayName: "Terraform Apply"
-            env:
-              ARM_CLIENT_ID: $(CLIENT_ID)
-              ARM_CLIENT_SECRET: $(CLIENT_SECRET)
-              ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-              ARM_TENANT_ID: $(TENANT_ID)
 
 
 
