@@ -13,11 +13,20 @@ variables:
 steps:
   - checkout: self
 
+  # Debugging: Check if variables are correctly set
+  - script: |
+      echo "CLIENT_ID: $(CLIENT_ID)"
+      echo "SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)"
+      echo "TENANT_ID: $(TENANT_ID)"
+    displayName: "Debug Environment Variables"
+
+  # Install Terraform
   - task: TerraformInstaller@0
     displayName: "Install Terraform"
     inputs:
       terraformVersion: 'latest'
 
+  # Azure CLI Login to verify credentials
   - task: AzureCLI@2
     displayName: "Login to Azure"
     inputs:
@@ -25,16 +34,24 @@ steps:
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |
+        az login --service-principal -u $(CLIENT_ID) -p $(CLIENT_SECRET) --tenant $(TENANT_ID)
         az account show
 
+  # Initialize Terraform
   - script: |
+      export ARM_CLIENT_ID=$(CLIENT_ID)
+      export ARM_CLIENT_SECRET=$(CLIENT_SECRET)
+      export ARM_SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)
+      export ARM_TENANT_ID=$(TENANT_ID)
       terraform init -backend=false
     displayName: "Terraform Init"
 
+  # Validate Terraform configuration
   - script: |
       terraform validate
     displayName: "Terraform Validate"
 
+  # Terraform Plan
   - script: |
       terraform plan -out=tfplan
     displayName: "Terraform Plan"
@@ -44,6 +61,7 @@ steps:
       ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
       ARM_TENANT_ID: $(TENANT_ID)
 
+  # Terraform Apply
   - script: |
       terraform apply -auto-approve tfplan
     displayName: "Terraform Apply"
@@ -52,6 +70,7 @@ steps:
       ARM_CLIENT_SECRET: $(CLIENT_SECRET)
       ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
       ARM_TENANT_ID: $(TENANT_ID)
+
 
 
 
