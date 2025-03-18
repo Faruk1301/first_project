@@ -1,8 +1,8 @@
 trigger:
-  - main  # Change this if your repo uses a different branch
+  - main
 
 variables:
-  - group: azure_credential  # Ensures the variable group is linked
+  - group: azure_credential  # Ensures variable group is linked
 
 stages:
   - stage: Terraform_Deployment
@@ -14,23 +14,15 @@ stages:
           vmImage: "ubuntu-latest"
 
         steps:
-          # Authenticate with Azure using the service connection
+          # Authenticate using Azure Service Connection
           - task: AzureCLI@2
             displayName: "Azure Authentication"
             inputs:
-              azureSubscription: "azure-sc"  # Your Azure service connection name
+              azureSubscription: "azure-sc"  
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
                 az account show
-          
-          # Debugging environment variables
-          - script: |
-              echo "Debugging Environment Variables"
-              echo "CLIENT_ID: $(CLIENT_ID)"
-              echo "SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)"
-              echo "TENANT_ID: $(TENANT_ID)"
-            displayName: "Debug Environment Variables"
 
           # Install Terraform
           - task: TerraformInstaller@1
@@ -38,33 +30,36 @@ stages:
             inputs:
               terraformVersion: "latest"
 
-          # Terraform Init Step
-          - task: TerraformTaskV2@2
+          # Terraform Init - **Local Backend (No Storage Account)**
+          - script: |
+              terraform init
             displayName: "Terraform Init"
-            inputs:
-              provider: "azurerm"
-              command: "init"
-              backendServiceArm: "azure-sc"  # Use the service connection
-              workingDirectory: "$(System.DefaultWorkingDirectory)"
+            env:
+              ARM_CLIENT_ID: $(CLIENT_ID)
+              ARM_CLIENT_SECRET: $(CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(TENANT_ID)
 
-          # Terraform Plan Step
-          - task: TerraformTaskV2@2
+          # Terraform Plan
+          - script: |
+              terraform plan -out=tfplan -input=false
             displayName: "Terraform Plan"
-            inputs:
-              provider: "azurerm"
-              command: "plan"
-              workingDirectory: "$(System.DefaultWorkingDirectory)"
-              environmentServiceNameAzureRM: "azure-sc"
+            env:
+              ARM_CLIENT_ID: $(CLIENT_ID)
+              ARM_CLIENT_SECRET: $(CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(TENANT_ID)
 
-          # Terraform Apply Step
-          - task: TerraformTaskV2@2
+          # Terraform Apply
+          - script: |
+              terraform apply -auto-approve tfplan
             displayName: "Terraform Apply"
-            inputs:
-              provider: "azurerm"
-              command: "apply"
-              commandOptions: "-auto-approve"
-              workingDirectory: "$(System.DefaultWorkingDirectory)"
-              environmentServiceNameAzureRM: "azure-sc"
+            env:
+              ARM_CLIENT_ID: $(CLIENT_ID)
+              ARM_CLIENT_SECRET: $(CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(TENANT_ID)
+
 
 
 
