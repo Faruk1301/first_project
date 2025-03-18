@@ -19,6 +19,13 @@ stages:
             inputs:
               terraformVersion: "latest"
 
+          # Step to authenticate using Azure CLI
+          - script: |
+              echo "Authenticating with Azure using service principal credentials"
+              az login --service-principal -u $(CLIENT_ID) -p $(CLIENT_SECRET) --tenant $(TENANT_ID)
+            displayName: "Azure Authentication"
+          
+          # Debugging environment variables
           - script: |
               echo "Debugging Environment Variables"
               echo "CLIENT_ID: $(CLIENT_ID)"
@@ -26,6 +33,7 @@ stages:
               echo "TENANT_ID: $(TENANT_ID)"
             displayName: "Debug Environment Variables"
 
+          # Terraform Init Step
           - script: |
               terraform init
             displayName: "Terraform Init"
@@ -35,8 +43,9 @@ stages:
               ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
               ARM_TENANT_ID: $(TENANT_ID)
 
+          # Terraform Plan Step
           - script: |
-              terraform plan -out=tfplan
+              terraform plan -out=tfplan -input=false
             displayName: "Terraform Plan"
             env:
               ARM_CLIENT_ID: $(CLIENT_ID)
@@ -44,6 +53,7 @@ stages:
               ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
               ARM_TENANT_ID: $(TENANT_ID)
 
+          # Terraform Apply Step
           - script: |
               terraform apply -auto-approve tfplan
             displayName: "Terraform Apply"
@@ -52,6 +62,7 @@ stages:
               ARM_CLIENT_SECRET: $(CLIENT_SECRET)
               ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
               ARM_TENANT_ID: $(TENANT_ID)
+
 
 
 
