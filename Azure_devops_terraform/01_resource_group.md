@@ -42,10 +42,31 @@ variable "TENANT_ID" {
   type        = string
 }
 
-3️⃣ Automate with Azure DevOps
-To integrate Terraform with Azure DevOps, follow these steps:
+## 🛠️ Automate with Azure DevOps
 
-Step 1: Create an Azure DevOps Service Connection
-Go to Azure DevOps → Project Settings → Service connections
-Create a new Azure Resource Manager (ARM) service connection
-Use Service Principal (automatic) authentication
+To integrate Terraform with **Azure DevOps**, follow these steps:
+
+### 🟡 Step 1: Create an Azure DevOps Service Connection  
+- Go to **Azure DevOps** → **Project Settings** → **Service connections**  
+- Create a new **Azure Resource Manager (ARM)** service connection  
+- Use **Service Principal (automatic)** authentication  
+
+### 🟡 Step 2: Define the Azure DevOps Pipeline (`azure-pipelines.yml`)  
+```yaml
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - task: TerraformInstaller@0
+    inputs:
+      terraformVersion: '1.6.0'
+
+  - script: terraform init
+    displayName: 'Initialize Terraform'
+
+  - script: terraform plan
+    displayName: 'Terraform Plan'
+
