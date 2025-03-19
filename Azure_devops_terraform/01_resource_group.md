@@ -13,4 +13,5 @@ This guide explains how to create an **Azure Resource Group** using **Terraform*
 ---
 
 ## 📂 Project Structure  
-
+📁 Azure_devops_terraform/ │── main.tf # Terraform configuration file
+│── azure-pipelines.yml # Azure DevOps pipeline for automation
