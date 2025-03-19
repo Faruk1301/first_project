@@ -87,3 +87,15 @@ steps:
   displayName: 'Terraform Apply'
 
 ```
+## ✅ Verify the Deployment
+
+After applying Terraform, verify the deployment in **Azure Portal**:
+
+- Navigate to → **Azure Portal**
+- Go to → **Resource Groups**
+- Search for → `example-resources`
+
+### OR, use the Azure CLI:
+
+```bash
+az group show --name example-resources
