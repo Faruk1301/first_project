@@ -86,3 +86,4 @@ steps:
     terraform apply -auto-approve tfplan
   displayName: 'Terraform Apply'
 
+```
