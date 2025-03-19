@@ -42,7 +42,7 @@ variable "TENANT_ID" {
   type        = string
 }
 
-3️⃣ Automate with Azure DevOps
+3️⃣ ####Automate with Azure DevOps
 To integrate Terraform with Azure DevOps, follow these steps:
 
 Step 1: Create an Azure DevOps Service Connection
