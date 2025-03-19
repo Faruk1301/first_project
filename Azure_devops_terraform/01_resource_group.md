@@ -41,7 +41,7 @@ variable "TENANT_ID" {
   description = "The Azure tenant ID."
   type        = string
 }
-
+```
 ## 🛠️ Automate with Azure DevOps
 
 To integrate Terraform with **Azure DevOps**, follow these steps:
