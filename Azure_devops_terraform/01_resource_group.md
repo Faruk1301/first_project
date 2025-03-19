@@ -54,19 +54,35 @@ To integrate Terraform with **Azure DevOps**, follow these steps:
 ### 🟡 Step 2: Define the Azure DevOps Pipeline (`azure-pipelines.yml`)  
 ```yaml
 trigger:
-  - main
+- main  # Runs pipeline when main.tf is changed in GitHub
 
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+- group: azure_credential  # Using your Variable Group
+
 steps:
-  - task: TerraformInstaller@0
-    inputs:
-      terraformVersion: '1.6.0'
+- checkout: self
 
-  - script: terraform init
-    displayName: 'Initialize Terraform'
+- task: TerraformInstaller@1
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: 'latest'
 
-  - script: terraform plan
-    displayName: 'Terraform Plan'
+- script: |
+    terraform init
+  displayName: 'Terraform Init'
+
+- script: |
+    terraform plan -out=tfplan -input=false \
+      -var "CLIENT_ID=$(CLIENT_ID)" \
+      -var "CLIENT_SECRET=$(CLIENT_SECRET)" \
+      -var "SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)" \
+      -var "TENANT_ID=$(TENANT_ID)"
+  displayName: 'Terraform Plan'
+
+- script: |
+    terraform apply -auto-approve tfplan
+  displayName: 'Terraform Apply'
 
