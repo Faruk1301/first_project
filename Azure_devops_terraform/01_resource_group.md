@@ -17,7 +17,7 @@ This guide explains how to create an **Azure Resource Group** using **Terraform*
 │── azure-pipelines.yml # Azure DevOps pipeline for automation 
 
 🛠 Terraform Configuration (main.tf) 
-# Declare the variables
+
 variable "CLIENT_ID" {
   description = "The client ID for the Azure AD application."
   type        = string
@@ -39,7 +39,7 @@ variable "TENANT_ID" {
   type        = string
 }
 
-# Provider block
+
 provider "azurerm" {
   features {}
 
@@ -49,7 +49,7 @@ provider "azurerm" {
   tenant_id       = var.TENANT_ID
 }
 
-# Resource block
+
 resource "azurerm_resource_group" "example" {
   name     = "example-resources5"
   location = "East US"
