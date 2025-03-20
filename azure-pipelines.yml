@@ -4,11 +4,17 @@ trigger:
       - main  # Runs only on main branch changes
 
 variables:
-  azureServiceConnection: 'azure-sc'  # Azure DevOps Service Connection
-  azureRegion: 'East US'  # Azure region
-  resourceGroupName: 'rg-terraform-vnet'  
-  vnetName: 'vnet-terraform'
-  subnetName: 'subnet-terraform'
+  - group: azure_credential  # Variable group from Azure DevOps
+  - name: azureServiceConnection
+    value: 'azure-sc'  # Azure DevOps Service Connection
+  - name: azureRegion
+    value: 'East US'  # Azure region
+  - name: resourceGroupName
+    value: 'rg-terraform-vnet'  
+  - name: vnetName
+    value: 'vnet-terraform'
+  - name: subnetName
+    value: 'subnet-terraform'
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -52,6 +58,7 @@ steps:
       terraform output
     displayName: 'Show Terraform Outputs'
     timeoutInMinutes: 5
+
 
 
 
