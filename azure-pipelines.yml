@@ -1,38 +1,48 @@
 trigger:
-- main  # Runs pipeline when main.tf is changed in GitHub
+  branches:
+    include:
+      - main
+
+variables:
+  azureServiceConnection: 'azure-sc'  # Name of the service connection
+  azureRegion: 'East US'  # Azure region to deploy to
+  resourceGroupName: 'rg-terraform-vnet'  
+  vnetName: 'vnet-terraform'
+  subnetName: 'subnet-terraform'
 
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-- group: azure_credential  # Using your Variable Group
-
 steps:
-- checkout: self
+  - script: |
+      echo "Checking if Terraform is installed..."
+      if ! command -v terraform &> /dev/null; then
+        echo "Terraform not found. Installing..."
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt update && sudo apt install terraform -y
+      fi
+    displayName: 'Install Terraform (if not installed)'
 
-- task: TerraformInstaller@1
-  displayName: 'Install Terraform'
-  inputs:
-    terraformVersion: 'latest'
+  - script: |
+      terraform init
+    displayName: 'Initialize Terraform'
 
-- script: |
-    terraform init
-  displayName: 'Terraform Init'
+  - script: |
+      terraform validate
+    displayName: 'Validate Terraform Configuration'
 
-- script: |
-    terraform plan -out=tfplan -input=false \
-      -var "CLIENT_ID=$(CLIENT_ID)" \
-      -var "CLIENT_SECRET=$(CLIENT_SECRET)" \
-      -var "SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)" \
-      -var "TENANT_ID=$(TENANT_ID)"
-  displayName: 'Terraform Plan'
+  - script: |
+      terraform plan -out=tfplan
+    displayName: 'Terraform Plan'
 
-- script: |
-    terraform apply -auto-approve tfplan
-  displayName: 'Terraform Apply'
+  - script: |
+      terraform apply -auto-approve
+    displayName: 'Apply Terraform Configuration'
 
-
-
+  - script: |
+      terraform output
+    displayName: 'Show Terraform Outputs'
 
 
 
