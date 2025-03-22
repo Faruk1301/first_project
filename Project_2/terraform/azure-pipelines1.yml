@@ -1,14 +1,14 @@
 trigger:
   branches:
     include:
-      - main  # Ensure this matches the branch you want to use for triggering
+      - main  # This is the branch that will trigger the pipeline
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: azure_credential  # This ensures that the variables are linked correctly
-  terraformWorkingDirectory: 'Project_2/terraform'  # Path to the terraform directory in your repo
+  - group: azure_credential  # This will link to your variable group in Azure DevOps
+  terraformWorkingDirectory: 'Project_2/terraform'  # Ensure this is the correct path to your terraform directory
 
 stages:
   - stage: Terraform_Deploy
@@ -17,7 +17,7 @@ stages:
       - job: Terraform
         displayName: 'Run Terraform'
         steps:
-          - checkout: self
+          - checkout: self  # This checks out your repo before running Terraform steps
           
           - task: TerraformInstaller@1
             displayName: 'Install Terraform'
@@ -64,6 +64,7 @@ stages:
               script: |
                 terraform output
               workingDirectory: $(terraformWorkingDirectory)
+
 
 
 
