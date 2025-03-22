@@ -7,8 +7,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  azureServiceConnection: 'azure-sc'  
-  terraformWorkingDirectory: 'Project_2/terraform'  
+  azureServiceConnection: 'azure-sc'
+  terraformWorkingDirectory: 'Project_2/terraform'
 
 stages:
 - stage: Terraform_Deploy
@@ -47,13 +47,17 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          terraform plan -out=tfplan
+          terraform plan -var="subscription_id=$(SUBSCRIPTION_ID)" \
+                         -var="client_id=$(CLIENT_ID)" \
+                         -var="client_secret=$(CLIENT_SECRET)" \
+                         -var="tenant_id=$(TENANT_ID)" \
+                         -out=tfplan
         workingDirectory: $(terraformWorkingDirectory)
-        env:
-          SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-          CLIENT_ID: $(CLIENT_ID)
-          CLIENT_SECRET: $(CLIENT_SECRET)
-          TENANT_ID: $(TENANT_ID)
+      env:
+        SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+        CLIENT_ID: $(CLIENT_ID)
+        CLIENT_SECRET: $(CLIENT_SECRET)
+        TENANT_ID: $(TENANT_ID)
 
     - task: Bash@3
       displayName: 'Terraform Apply'
@@ -62,15 +66,6 @@ stages:
         script: |
           terraform apply -auto-approve tfplan
         workingDirectory: $(terraformWorkingDirectory)
-        env:
-          SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-          CLIENT_ID: $(CLIENT_ID)
-          CLIENT_SECRET: $(CLIENT_SECRET)
-          TENANT_ID: $(TENANT_ID)
-
-
-
-
 
 
 
