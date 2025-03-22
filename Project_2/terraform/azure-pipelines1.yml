@@ -1,14 +1,14 @@
 trigger:
   branches:
     include:
-      - main  # Adjust this based on your branch
+      - main  # Ensure this is the branch you want to trigger from
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
   - group: azure_credential  # Ensure this is linked correctly in Azure DevOps
-  terraformWorkingDirectory: 'Project_2/terraform'  # Correct path
+  terraformWorkingDirectory: 'Project_2/terraform'  # Correct path to your Terraform directory
 
 stages:
   - stage: Terraform_Deploy
@@ -64,6 +64,7 @@ stages:
               script: |
                 terraform output
               workingDirectory: $(terraformWorkingDirectory)
+
 
 
 
