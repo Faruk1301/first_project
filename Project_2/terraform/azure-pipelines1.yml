@@ -10,16 +10,21 @@ variables:
 steps:
 - checkout: self
 
+# Install Terraform
 - task: TerraformInstaller@0
   displayName: 'Install Terraform'
   inputs:
     terraformVersion: 'latest'
 
+# Change to the directory containing the main.tf file and run terraform init
 - script: |
+    cd Project_2/terraform  # Ensure this is the correct path to your terraform directory
     terraform init
   displayName: 'Terraform Init'
 
+# Run terraform plan in the specified directory
 - script: |
+    cd Project_2/terraform  # Ensure this path is correct
     terraform plan -out=tfplan \
       -var="CLIENT_ID=$(CLIENT_ID)" \
       -var="CLIENT_SECRET=$(CLIENT_SECRET)" \
@@ -29,7 +34,9 @@ steps:
   timeoutInMinutes: 10
   continueOnError: false
 
+# Apply the terraform configuration in the specified directory
 - script: |
+    cd Project_2/terraform  # Ensure this path is correct
     terraform apply -auto-approve \
       -var="CLIENT_ID=$(CLIENT_ID)" \
       -var="CLIENT_SECRET=$(CLIENT_SECRET)" \
@@ -38,6 +45,7 @@ steps:
   displayName: 'Apply Terraform Configuration'
   timeoutInMinutes: 10
   continueOnError: false
+
 
 
 
