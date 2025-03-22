@@ -1,4 +1,3 @@
-	
 trigger:
   branches:
     include:
@@ -25,16 +24,6 @@ stages:
       displayName: 'Install Terraform'
       inputs:
         terraformVersion: 'latest'
-
-    - task: Bash@3
-      displayName: 'Debug Directory Structure'
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "Current Directory:"
-          pwd
-          echo "Listing workspace contents:"
-          ls -la /home/vsts/work/1/s/
 
     - task: Bash@3
       displayName: 'Terraform Init'
@@ -67,7 +56,7 @@ stages:
         script: |
           terraform output
         workingDirectory: $(terraformWorkingDirectory)
-)
+
 
 
 
