@@ -1,19 +1,19 @@
 
 # Declare the necessary variables
-variable "SUBSCRIPTION_ID" {
+variable "subscription_id" {
   description = "The subscription ID"
 }
 
-variable "CLIENT_ID" {
+variable "client_id" {
   description = "The client ID"
 }
 
-variable "CLIENT_SECRET" {
+variable "client_secret" {
   description = "The client secret"
   sensitive   = true
 }
 
-variable "TENANT_ID" {
+variable "tenant_id" {
   description = "The tenant ID"
 }
 
@@ -21,10 +21,10 @@ variable "TENANT_ID" {
 provider "azurerm" {
   features {}
 
-  SUBSCRIPTION_ID = var.SUBSCRIPTION_ID
-  CLIENT_ID       = var.CLIENT_ID
-  CLIENT_SECRET   = var.CLIENT_SECRET
-  TENANT_ID       = var.TENANT_ID
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
 }
 
 # Resource Group
