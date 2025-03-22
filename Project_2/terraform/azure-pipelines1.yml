@@ -8,7 +8,7 @@ pool:
 
 variables:
   azureServiceConnection: 'azure-sc'  # Your Azure service connection
-  terraformWorkingDirectory: 'project_2/terraform'  # Path to Terraform files
+  terraformWorkingDirectory: 'Project_2/terraform'  # Use correct case-sensitive path
 
 stages:
 - stage: Terraform_Deploy
@@ -24,6 +24,16 @@ stages:
       displayName: 'Install Terraform'
       inputs:
         terraformVersion: 'latest'
+
+    - task: Bash@3
+      displayName: 'Debug Directory Structure'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "Current Directory:"
+          pwd
+          echo "Listing workspace contents:"
+          ls -la /home/vsts/work/1/s/
 
     - task: Bash@3
       displayName: 'Terraform Init'
@@ -48,6 +58,7 @@ stages:
         script: |
           terraform apply -auto-approve tfplan
         workingDirectory: $(terraformWorkingDirectory)
+)
 
 
 
