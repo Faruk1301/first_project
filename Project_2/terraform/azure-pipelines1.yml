@@ -1,0 +1,65 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: azure_credential  # Variable group containing CLIENT_ID, CLIENT_SECRET, SUBSCRIPTION_ID, and TENANT_ID
+
+steps:
+- checkout: self
+
+- task: TerraformInstaller@0
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: 'latest'
+
+- script: |
+    terraform init
+  displayName: 'Terraform Init'
+
+- script: |
+    terraform plan -out=tfplan \
+      -var="CLIENT_ID=$(CLIENT_ID)" \
+      -var="CLIENT_SECRET=$(CLIENT_SECRET)" \
+      -var="SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)" \
+      -var="TENANT_ID=$(TENANT_ID)"
+  displayName: 'Terraform Plan'
+  timeoutInMinutes: 10
+  continueOnError: false
+
+- script: |
+    terraform apply -auto-approve \
+      -var="CLIENT_ID=$(CLIENT_ID)" \
+      -var="CLIENT_SECRET=$(CLIENT_SECRET)" \
+      -var="SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)" \
+      -var="TENANT_ID=$(TENANT_ID)"
+  displayName: 'Apply Terraform Configuration'
+  timeoutInMinutes: 10
+  continueOnError: false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
