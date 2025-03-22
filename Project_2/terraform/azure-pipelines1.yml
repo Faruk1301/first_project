@@ -1,69 +1,71 @@
 trigger:
   branches:
     include:
-      - main  # This is the branch that will trigger the pipeline
+      - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: azure_credential  # This will link to your variable group in Azure DevOps
-  terraformWorkingDirectory: 'Project_2/terraform'  # Ensure this is the correct path to your terraform directory
+  azureServiceConnection: 'azure-sc'  
+  terraformWorkingDirectory: 'Project_2/terraform'  
 
 stages:
-  - stage: Terraform_Deploy
-    displayName: 'Terraform Deployment'
-    jobs:
-      - job: Terraform
-        displayName: 'Run Terraform'
-        steps:
-          - checkout: self  # This checks out your repo before running Terraform steps
-          
-          - task: TerraformInstaller@1
-            displayName: 'Install Terraform'
-            inputs:
-              terraformVersion: 'latest'
+- stage: Terraform_Deploy
+  displayName: 'Terraform Deployment'
+  jobs:
+  - job: Terraform
+    displayName: 'Run Terraform'
+    steps:
 
-          - task: Bash@2
-            displayName: 'Azure CLI Authentication'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "Logging in to Azure using service principal"
-                az login --service-principal -u $(CLIENT_ID) -p $(CLIENT_SECRET) --tenant $(TENANT_ID)
-                az account set --subscription $(SUBSCRIPTION_ID)
+    - checkout: self
 
-          - task: Bash@3
-            displayName: 'Terraform Init'
-            inputs:
-              targetType: 'inline'
-              script: |
-                terraform init
-              workingDirectory: $(terraformWorkingDirectory)
+    - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: 'latest'
 
-          - task: Bash@3
-            displayName: 'Terraform Plan'
-            inputs:
-              targetType: 'inline'
-              script: |
-                terraform plan -out=tfplan
-              workingDirectory: $(terraformWorkingDirectory)
+    - task: AzureCLI@2
+      displayName: 'Azure Login'
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az account show
 
-          - task: Bash@3
-            displayName: 'Terraform Apply'
-            inputs:
-              targetType: 'inline'
-              script: |
-                terraform apply -auto-approve tfplan
-              workingDirectory: $(terraformWorkingDirectory)
+    - task: Bash@3
+      displayName: 'Terraform Init'
+      inputs:
+        targetType: 'inline'
+        script: |
+          terraform init
+        workingDirectory: $(terraformWorkingDirectory)
 
-          - task: Bash@3
-            displayName: 'Terraform Output'
-            inputs:
-              targetType: 'inline'
-              script: |
-                terraform output
-              workingDirectory: $(terraformWorkingDirectory)
+    - task: Bash@3
+      displayName: 'Terraform Plan'
+      inputs:
+        targetType: 'inline'
+        script: |
+          terraform plan -var="subscription_id=$AZURE_SUBSCRIPTION_ID" \
+                         -var="client_id=$AZURE_CLIENT_ID" \
+                         -var="client_secret=$AZURE_CLIENT_SECRET" \
+                         -var="tenant_id=$AZURE_TENANT_ID" \
+                         -out=tfplan
+        workingDirectory: $(terraformWorkingDirectory)
+        env:
+          AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+          AZURE_CLIENT_ID: $(AZURE_CLIENT_ID)
+          AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+          AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+
+    - task: Bash@3
+      displayName: 'Terraform Apply'
+      inputs:
+        targetType: 'inline'
+        script: |
+          terraform apply -auto-approve tfplan
+        workingDirectory: $(terraformWorkingDirectory)
 
 
 
