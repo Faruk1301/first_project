@@ -1,13 +1,13 @@
 trigger:
   branches:
     include:
-      - main  # Ensure this matches the branch name in your repo
+      - main  # Adjust this based on your branch
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: azure_credential  # Ensure this is correctly linked in your Azure DevOps
+  - group: azure_credential  # Ensure this is linked correctly in Azure DevOps
   terraformWorkingDirectory: 'Project_2/terraform'  # Correct path
 
 stages:
@@ -32,7 +32,7 @@ stages:
                 echo "Logging in to Azure using service principal"
                 az login --service-principal -u $(CLIENT_ID) -p $(CLIENT_SECRET) --tenant $(TENANT_ID)
                 az account set --subscription $(SUBSCRIPTION_ID)
-          
+
           - task: Bash@3
             displayName: 'Terraform Init'
             inputs:
@@ -64,7 +64,6 @@ stages:
               script: |
                 terraform output
               workingDirectory: $(terraformWorkingDirectory)
-
 
 
 
