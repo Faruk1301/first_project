@@ -7,7 +7,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  azureServiceConnection: 'azure-sc'  # Your Azure service connection
+  - group: azure_credential  # This includes the variable group (if you have any other variables)
+  
   terraformWorkingDirectory: 'Project_2/terraform'  # Ensure this matches your repo
 
 stages:
@@ -25,6 +26,15 @@ stages:
       inputs:
         terraformVersion: 'latest'
 
+    - task: Bash@2
+      displayName: 'Azure CLI Authentication'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "Logging in to Azure using service principal"
+          az login --service-principal -u $(CLIENT_ID) -p $(CLIENT_SECRET) --tenant $(TENANT_ID)
+          az account set --subscription $(SUBSCRIPTION_ID)
+      
     - task: Bash@3
       displayName: 'Terraform Init'
       inputs:
@@ -56,6 +66,7 @@ stages:
         script: |
           terraform output
         workingDirectory: $(terraformWorkingDirectory)
+
 
 
 
