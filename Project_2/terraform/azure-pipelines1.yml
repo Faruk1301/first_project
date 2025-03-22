@@ -1,49 +1,53 @@
 trigger:
-  - main
+  branches:
+    include:
+      - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: azure_credential  # Variable group containing CLIENT_ID, CLIENT_SECRET, SUBSCRIPTION_ID, and TENANT_ID
+  azureServiceConnection: 'azure-sc'  # Your Azure service connection
+  terraformWorkingDirectory: 'project_2/terraform'  # Path to Terraform files
 
 stages:
-  - stage: Terraform
-    jobs:
-      - job: Terraform
-        steps:
-          - checkout: self
+- stage: Terraform_Deploy
+  displayName: 'Terraform Deployment'
+  jobs:
+  - job: Terraform
+    displayName: 'Run Terraform'
+    steps:
 
-          - task: TerraformInstaller@0
-            displayName: 'Install Terraform'
-            inputs:
-              terraformVersion: 'latest'
+    - checkout: self
+    
+    - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: 'latest'
 
-          - script: |
-              terraform init
-            displayName: 'Terraform Init'
-            workingDirectory: 'Project_2/terraform/'
+    - task: Bash@3
+      displayName: 'Terraform Init'
+      inputs:
+        targetType: 'inline'
+        script: |
+          terraform init
+        workingDirectory: $(terraformWorkingDirectory)
 
-          - script: |
-              terraform plan -out=tfplan \
-                -var="CLIENT_ID=$(CLIENT_ID)" \
-                -var="CLIENT_SECRET=$(CLIENT_SECRET)" \
-                -var="SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)" \
-                -var="TENANT_ID=$(TENANT_ID)"
-            displayName: 'Terraform Plan'
-            workingDirectory: 'Project_2/terraform/'
-            timeoutInMinutes: 10
-            continueOnError: false
+    - task: Bash@3
+      displayName: 'Terraform Plan'
+      inputs:
+        targetType: 'inline'
+        script: |
+          terraform plan -out=tfplan
+        workingDirectory: $(terraformWorkingDirectory)
 
-          - script: |
-              terraform apply -auto-approve tfplan
-            displayName: 'Apply Terraform Configuration'
-            workingDirectory: 'Project_2/terraform/'
-            timeoutInMinutes: 10
-            continueOnError: false
-
-
-
+    - task: Bash@3
+      displayName: 'Terraform Apply'
+      inputs:
+        targetType: 'inline'
+        script: |
+          terraform apply -auto-approve tfplan
+        workingDirectory: $(terraformWorkingDirectory)
 
 
 
