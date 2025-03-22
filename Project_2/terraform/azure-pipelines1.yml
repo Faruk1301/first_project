@@ -50,10 +50,10 @@ stages:
           terraform plan -out=tfplan
         workingDirectory: $(terraformWorkingDirectory)
         env:
-          ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-          ARM_CLIENT_ID: $(CLIENT_ID)
-          ARM_CLIENT_SECRET: $(CLIENT_SECRET)
-          ARM_TENANT_ID: $(TENANT_ID)
+          SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+          CLIENT_ID: $(CLIENT_ID)
+          CLIENT_SECRET: $(CLIENT_SECRET)
+          TENANT_ID: $(TENANT_ID)
 
     - task: Bash@3
       displayName: 'Terraform Apply'
@@ -63,11 +63,10 @@ stages:
           terraform apply -auto-approve tfplan
         workingDirectory: $(terraformWorkingDirectory)
         env:
-          ARM_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-          ARM_CLIENT_ID: $(CLIENT_ID)
-          ARM_CLIENT_SECRET: $(CLIENT_SECRET)
-          ARM_TENANT_ID: $(TENANT_ID)
-
+          SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+          CLIENT_ID: $(CLIENT_ID)
+          CLIENT_SECRET: $(CLIENT_SECRET)
+          TENANT_ID: $(TENANT_ID)
 
 
 
