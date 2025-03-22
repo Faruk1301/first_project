@@ -1,3 +1,4 @@
+	
 trigger:
   branches:
     include:
@@ -8,7 +9,7 @@ pool:
 
 variables:
   azureServiceConnection: 'azure-sc'  # Your Azure service connection
-  terraformWorkingDirectory: 'Project_2/terraform'  # Use correct case-sensitive path
+  terraformWorkingDirectory: 'Project_2/terraform'  # Ensure this matches your repo
 
 stages:
 - stage: Terraform_Deploy
@@ -57,6 +58,14 @@ stages:
         targetType: 'inline'
         script: |
           terraform apply -auto-approve tfplan
+        workingDirectory: $(terraformWorkingDirectory)
+
+    - task: Bash@3
+      displayName: 'Terraform Output'
+      inputs:
+        targetType: 'inline'
+        script: |
+          terraform output
         workingDirectory: $(terraformWorkingDirectory)
 )
 
